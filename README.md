@@ -8,6 +8,7 @@ This repository contains code for the **Interactive Analysis Suite for Proteomic
 The suite is designed to provide a interactive workflow facilitating exploratory analysis, visualization and interpretation of proteomic datasets, with a focus on dimensionality reduction and clustering analysis.
 
 ## Features:
+- **Interactive Workflow for exploratory analysis of Proteomics datasets**
 - **Data Quality Control** - tools for handling raw proteomica data and preparing it for analysis.
 - **Preprocessing** - Options for filtering, normalisation and adjustments (e.g. residualization).
 - **Confounder Identification** - Options for identification of confounding variables including Surrogate Variable Analysis.
