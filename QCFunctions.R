@@ -40,8 +40,8 @@ QC_main_menu <- function() {
       remove_warning_samples(select.npx, select.sinfo)
     } else if (qc_choice == 4) {
       res <- handle_NAs(npx = select.npx, sinfo = select.sinfo)
-      npx   <- res$npx
-      sinfo <- res$sinfo
+      select.npx <<- res$npx
+      select.sinfo <<- res$sinfo
     } else if (qc_choice == 5) {
       olink_runner(select.npx = select.npx, select.sinfo = select.sinfo
                    , select.binfo = select.binfo)
