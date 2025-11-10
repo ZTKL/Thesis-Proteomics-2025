@@ -37,6 +37,7 @@ Step 1: Load all functions found in the following R scripts to the RStudio envir
 Step 2: Install and load all packages listed in PackLoader.R 
 - Some needs to be installed via BiocManager
 - ProtPQN can be found on the SchwenkLab GitHub page
+- The correct versions of the packages can be found in the file PackageVersions.txt
 
 Step 3: Prepare data
 - npx: protein abundance data (samples as rows, proteins as columns)
