@@ -13,7 +13,7 @@ confounderIdentificationMenu <- function() {
   # Run preliminary variable setup
   vars <- setup_variables()
   if (is.null(vars)) return(invisible(NULL))
-  npx   <- vars$npx
+  ptx   <- vars$ptx
   sinfo <- vars$sinfo
   binfo <- vars$binfo
   
@@ -32,7 +32,7 @@ confounderIdentificationMenu <- function() {
     } else if (confound_choice == 1) {
       confounderBoxplots(sinfo)
     } else if (confound_choice == 2) {
-      confoundersPCA(npx, sinfo)
+      confoundersPCA(ptx, sinfo)
     } else if (confound_choice == 3) {
       prop_shift <- as.numeric(readline(prompt = "Enter cutoff value for large proportional effect:\n"))
       DEAconfoundersX(expr = NULL, sinfo = NULL, prop_shift = prop_shift)
@@ -65,11 +65,11 @@ confounderBoxplots <- function(sinfo) {
 ################################################################################
 # Function for pca plot colored by selected variable (column) 
 ################################################################################
-confoundersPCA <- function(npx,sinfo) {
+confoundersPCA <- function(ptx,sinfo) {
   cat("\nRunning PCA for Sample Batch Analysis...\n")
   # Run PCA (Assuming data has already been scaled, else change scale. argument to TRUE)
-  pca <- prcomp(as.data.frame(npx), scale. = FALSE)
-  pcaX <- as.data.frame(pca$x, row.names = rownames(npx))
+  pca <- prcomp(as.data.frame(ptx), scale. = FALSE)
+  pcaX <- as.data.frame(pca$x, row.names = rownames(ptx))
   cat("\nAvailable columns in sinfo:\n")
   print(names(sinfo))
   
@@ -78,7 +78,7 @@ confoundersPCA <- function(npx,sinfo) {
   
   # Create plot 
   if (batch_color %in% names(sinfo)) {
-    color_values <- sinfo[match(rownames(npx), rownames(sinfo)), batch_color]
+    color_values <- sinfo[match(rownames(ptx), rownames(sinfo)), batch_color]
     pcaX$Color <- as.factor(color_values)
     p <- ggplot(pcaX, aes(x = PC1, y = PC2, color = Color)) +
       geom_point(size = 3) +
@@ -104,12 +104,12 @@ confoundersPCA <- function(npx,sinfo) {
 ################################################################################
 DEAconfoundersX <- function(expr = NULL, sinfo = NULL, prop_shift) {
   # Check required objects
-  if (is.null(expr) && !exists("select.npx", envir = .GlobalEnv))
-    stop("Expression data not provided and 'select.npx' not found.")
+  if (is.null(expr) && !exists("select.ptx", envir = .GlobalEnv))
+    stop("Expression data not provided and 'select.ptx' not found.")
   if (is.null(sinfo) && !exists("select.sinfo", envir = .GlobalEnv))
     stop("Sample info not provided and 'select.sinfo' not found.")
   
-  if (is.null(expr)) expr <- get("select.npx", envir = .GlobalEnv)
+  if (is.null(expr)) expr <- get("select.ptx", envir = .GlobalEnv)
   if (is.null(sinfo)) sinfo <- get("select.sinfo", envir = .GlobalEnv)
   
   # Transpose expression matrix as limma requires features as rows
@@ -176,9 +176,9 @@ DEAconfoundersX <- function(expr = NULL, sinfo = NULL, prop_shift) {
 # Function for Surrogate Variable Analysis (SVA)
 ################################################################################
 runSVA <- function() {
-  # Check that select.npx exists.
-  if (!exists("select.npx") || is.null(select.npx)) {
-    cat("\nError: 'select.npx' is not available. Ensure the expression data is loaded before SVA.\n")
+  # Check that select.ptx exists.
+  if (!exists("select.ptx") || is.null(select.ptx)) {
+    cat("\nError: 'select.ptx' is not available. Ensure the expression data is loaded before SVA.\n")
     return(invisible(NULL))
   }
   
@@ -188,9 +188,9 @@ runSVA <- function() {
     return(invisible(NULL))
   }
   
-  # Check that the number of samples (rows) in select.npx matches that in select.sinfo.
-  if (nrow(select.npx) != nrow(select.sinfo)) {
-    cat("\nError: The number of rows in 'select.npx' (samples) must equal the number of rows in 'select.sinfo'.\n")
+  # Check that the number of samples (rows) in select.ptx matches that in select.sinfo.
+  if (nrow(select.ptx) != nrow(select.sinfo)) {
+    cat("\nError: The number of rows in 'select.ptx' (samples) must equal the number of rows in 'select.sinfo'.\n")
     return(invisible(NULL))
   }
   
@@ -246,7 +246,7 @@ runSVA <- function() {
   }
   
   # Run SVA 
-  sva_result <- sva(t(select.npx), mod, mod0, n.sv = nsv)
+  sva_result <- sva(t(select.ptx), mod, mod0, n.sv = nsv)
   cat("\nSVA analysis complete. Estimated number of surrogate variables: ", sva_result$n.sv, "\n")
   
   # Add surrogate variable columns to select.sinfo
