@@ -92,7 +92,7 @@ inverse_normalize_df <- function(df, ties.method = "average") {
   # Apply the transformation to every column and return as a dataframe
   transformed_df <- data.frame(lapply(df, inv_norm, ties.method = ties.method), 
                                row.names = rownames(df))
-  assign("select.npx", transformed_df, .GlobalEnv)
+  assign("select.ptx", transformed_df, .GlobalEnv)
   return(transformed_df)
 }
 
@@ -106,15 +106,15 @@ filter_data <- function(reproduce = NULL) {
     
     if (variance_choice == 1) {
       # Column Variance Filtering
-      col_vars <- apply(select.npx, 2, var)
+      col_vars <- apply(select.ptx, 2, var)
       cutoff <- quantile(col_vars, percentile_input)
-      select.npx <<- as.data.frame(select.npx[, col_vars > cutoff, drop = FALSE])
+      select.ptx <<- as.data.frame(select.ptx[, col_vars > cutoff, drop = FALSE])
     } else if (variance_choice == 2) {
       # Row Variance Filtering
-      row_vars <- apply(select.npx, 1, var)
+      row_vars <- apply(select.ptx, 1, var)
       cutoff <- quantile(row_vars, percentile_input)
-      select.npx <<- as.data.frame(select.npx[row_vars > cutoff, , drop = FALSE])
-      select.sinfo <<- select.sinfo[rownames(select.sinfo) %in% rownames(select.npx), ]
+      select.ptx <<- as.data.frame(select.ptx[row_vars > cutoff, , drop = FALSE])
+      select.sinfo <<- select.sinfo[rownames(select.sinfo) %in% rownames(select.ptx), ]
     } else {
       reproduce <- data.frame(
         varChoice = NA,
@@ -151,20 +151,20 @@ filter_data <- function(reproduce = NULL) {
       } else if (percentile_input > 0 && percentile_input <= 1) {
         if (variance_choice == 1) {
           # Column Variance Filtering
-          col_vars <- apply(select.npx, 2, var)
+          col_vars <- apply(select.ptx, 2, var)
           cutoff <- quantile(col_vars, percentile_input)
-          select.npx <<- as.data.frame(select.npx[, col_vars > cutoff, drop = FALSE])
-          cat("\nColumn variance filtering applied. Number of columns retained:", ncol(select.npx), "\n")
+          select.ptx <<- as.data.frame(select.ptx[, col_vars > cutoff, drop = FALSE])
+          cat("\nColumn variance filtering applied. Number of columns retained:", ncol(select.ptx), "\n")
         } else if (variance_choice == 2) {
           # Row Variance Filtering
-          row_vars <- apply(select.npx, 1, var)
+          row_vars <- apply(select.ptx, 1, var)
           cutoff <- quantile(row_vars, percentile_input)
-          select.npx <<- as.data.frame(select.npx[row_vars > cutoff, , drop = FALSE])
-          # Also filter select.sinfo rows to match the filtered select.npx rows
+          select.ptx <<- as.data.frame(select.ptx[row_vars > cutoff, , drop = FALSE])
+          # Also filter select.sinfo rows to match the filtered select.ptx rows
           if (exists("select.sinfo")) {
-            select.sinfo <<- select.sinfo[rownames(select.sinfo) %in% rownames(select.npx), ]
+            select.sinfo <<- select.sinfo[rownames(select.sinfo) %in% rownames(select.ptx), ]
           }
-          cat("\nRow variance filtering applied. Number of rows retained:", nrow(select.npx), "\n")
+          cat("\nRow variance filtering applied. Number of rows retained:", nrow(select.ptx), "\n")
         } else {
           cat("\nInvalid filtering option selected.\n")
         }
@@ -208,7 +208,7 @@ normalize_data <- function(reproduce = NULL) {
   
   if (norm_choice == 1) {
     cat("\nApplying inverse log₂ transformation to undo any prior log₂ normalization...\n")
-    select.npx <<- 2^(select.npx)
+    select.ptx <<- 2^(select.ptx)
     
   } else if (norm_choice == 2) {
     # ProtPQN normalization (over the whole data):
@@ -217,9 +217,9 @@ normalize_data <- function(reproduce = NULL) {
       return(invisible(NULL))
     }
     cat("\nApplying ProtPQN normalization...\n")
-    select.npx <<- apply_protpqn(select.npx, transform = TRUE)
+    select.ptx <<- apply_protpqn(select.ptx, transform = TRUE)
     # Assign normalized data to global environment
-    assign("select.npx", select.npx, .GlobalEnv)
+    assign("select.ptx", select.ptx, .GlobalEnv)
     
   } else if (norm_choice == 3) {
     cat("\nApplying ProtPQN (multiple panels) normalization...\n")
@@ -238,7 +238,7 @@ normalize_data <- function(reproduce = NULL) {
       return(invisible(NULL))
     }
     
-    # Split select.npx into two subsets based on panel info.
+    # Split select.ptx into two subsets based on panel info.
     cam_idx <- which(select.binfo$panel == "CAM")
     imonc_idx <- which(select.binfo$panel == "IMONC")
     
@@ -249,38 +249,38 @@ normalize_data <- function(reproduce = NULL) {
     }
     
     # Create temporary matrices for each panel.
-    select.npx$sample_id <<- rownames(select.npx)
-    temp.CAM.npx <- select.npx %>% dplyr::select(sample_id, 
-                                                 all_of(colnames(select.npx)[cam_idx])) 
-    temp.IMONC.npx <- select.npx %>% dplyr::select(sample_id, 
-                                                   all_of(colnames(select.npx)[imonc_idx]))
+    select.ptx$sample_id <<- rownames(select.ptx)
+    temp.CAM.ptx <- select.ptx %>% dplyr::select(sample_id, 
+                                                 all_of(colnames(select.ptx)[cam_idx])) 
+    temp.IMONC.ptx <- select.ptx %>% dplyr::select(sample_id, 
+                                                   all_of(colnames(select.ptx)[imonc_idx]))
     
     # Apply ProtPQN normalization separately per panel
-    temp.CAM.npx <- apply_protpqn(temp.CAM.npx, transform = TRUE, 
+    temp.CAM.ptx <- apply_protpqn(temp.CAM.ptx, transform = TRUE, 
                                   long_format = FALSE,
                                   kitwise = FALSE)
-    temp.IMONC.npx <- apply_protpqn(temp.IMONC.npx, transform = TRUE,
+    temp.IMONC.ptx <- apply_protpqn(temp.IMONC.ptx, transform = TRUE,
                                     long_format = FALSE,
                                     kitwise = FALSE)
     
-    temp.CAM.npx <- temp.CAM.npx %>% dplyr::select(-sample_id)
-    temp.IMONC.npx <- temp.IMONC.npx %>% dplyr::select(-sample_id)
+    temp.CAM.ptx <- temp.CAM.ptx %>% dplyr::select(-sample_id)
+    temp.IMONC.ptx <- temp.IMONC.ptx %>% dplyr::select(-sample_id)
     
-    # Rejoin the two normalized subsets into a new select.npx, preserving original column order.
-    norm_npx <- select.npx %>% dplyr::select(-sample_id) 
-    norm_npx[, cam_idx] <- temp.CAM.npx
-    norm_npx[, imonc_idx] <- temp.IMONC.npx
+    # Rejoin the two normalized subsets into a new select.ptx, preserving original column order.
+    norm_ptx <- select.ptx %>% dplyr::select(-sample_id) 
+    norm_ptx[, cam_idx] <- temp.CAM.ptx
+    norm_ptx[, imonc_idx] <- temp.IMONC.ptx
     
     # Assign normalized data to global environment
-    select.npx <<- norm_npx
-    assign('select.npx', select.npx, .GlobalEnv)
+    select.ptx <<- norm_ptx
+    assign('select.ptx', select.ptx, .GlobalEnv)
     
   } else if (norm_choice == 4) {
     cat("\nApplying Scaling (z-score) normalization...\n")
-    unscaled.npx <<- select.npx
-    select.npx <<- as.data.frame(scale(select.npx, scale = TRUE, center = TRUE ))
+    unscaled.ptx <<- select.ptx
+    select.ptx <<- as.data.frame(scale(select.ptx, scale = TRUE, center = TRUE ))
     # Assign to global environment
-    assign("select.npx", select.npx, .GlobalEnv)
+    assign("select.ptx", select.ptx, .GlobalEnv)
     
   } else if (norm_choice == 5) {
     if (is.na(reproduce$minMaxChioice)) {
@@ -297,15 +297,15 @@ normalize_data <- function(reproduce = NULL) {
     
     if (mm_choice == 1) {
       # Normalize by columns
-      select.npx <<- as.data.frame(apply(select.npx, 2, min_max_normalize))
+      select.ptx <<- as.data.frame(apply(select.ptx, 2, min_max_normalize))
       
     } else if (mm_choice == 2) {
       # Normalize by rows
-      select.npx <<- as.data.frame(t(apply(select.npx, 1, min_max_normalize)))
+      select.ptx <<- as.data.frame(t(apply(select.ptx, 1, min_max_normalize)))
       
     } else if (mm_choice == 3) {
       # Global (rows and columns)
-      mm_mat <- as.matrix(select.npx)
+      mm_mat <- as.matrix(select.ptx)
       global_min <- min(mm_mat)
       global_max <- max(mm_mat)
       # Prevent division by zero
@@ -313,7 +313,7 @@ normalize_data <- function(reproduce = NULL) {
         cat("\nAll values are the same. Skipping global normalization.\n")
       } else {
         norm_mat <- (mm_mat - global_min) / (global_max - global_min)
-        select.npx <<- as.data.frame(norm_mat)
+        select.ptx <<- as.data.frame(norm_mat)
       }
     } else {
       cat("\nInvalid choice for Min-Max normalization. Skipping normalization.\n")
@@ -326,11 +326,11 @@ normalize_data <- function(reproduce = NULL) {
       return(invisible(NULL))
     }
     cat("\nApplying VSN normalization...\n")
-    select.npx <<- t(normalizeVSN(t(select.npx)))
+    select.ptx <<- t(normalizeVSN(t(select.ptx)))
     
   } else if (norm_choice == 7) {
     # Inverse Normal Transformation using qnorm
-    inverse_normalize_df(df = as.data.frame(select.npx))
+    inverse_normalize_df(df = as.data.frame(select.ptx))
     
   } else if (norm_choice == 8) {
     cat("\nApplying vsn (multiple panels) normalization...\n")
@@ -345,7 +345,7 @@ normalize_data <- function(reproduce = NULL) {
       return(invisible(NULL))
     }
     
-    # Split select.npx (expression data) into subsets based on panel info.
+    # Split select.ptx (expression data) into subsets based on panel info.
     cam_idx <- which(select.binfo$panel == "CAM")
     imonc_idx <- which(select.binfo$panel == "IMONC")
     
@@ -356,19 +356,19 @@ normalize_data <- function(reproduce = NULL) {
     }
     
     # Create temporary matrices for each panel.
-    temp.CAM.npx <- select.npx[, cam_idx, drop = FALSE]
-    temp.IMONC.npx <- select.npx[, imonc_idx, drop = FALSE]
+    temp.CAM.ptx <- select.ptx[, cam_idx, drop = FALSE]
+    temp.IMONC.ptx <- select.ptx[, imonc_idx, drop = FALSE]
     
     # Apply vsn normalization separately per panel
-    temp.CAM.npx <- t(normalizeVSN(t(temp.CAM.npx)))
-    temp.IMONC.npx <- t(normalizeVSN(t(temp.IMONC.npx)))
+    temp.CAM.ptx <- t(normalizeVSN(t(temp.CAM.ptx)))
+    temp.IMONC.ptx <- t(normalizeVSN(t(temp.IMONC.ptx)))
     
-    # Rejoin the two normalized subsets into a new select.npx, preserving the original column order.
-    norm_npx <- select.npx  # copy original structure
-    norm_npx[, cam_idx] <- temp.CAM.npx
-    norm_npx[, imonc_idx] <- temp.IMONC.npx
-    select.npx <<- norm_npx
-    assign("select.npx", select.npx, .GlobalEnv)
+    # Rejoin the two normalized subsets into a new select.ptx, preserving the original column order.
+    norm_ptx <- select.ptx  # copy original structure
+    norm_ptx[, cam_idx] <- temp.CAM.ptx
+    norm_ptx[, imonc_idx] <- temp.IMONC.ptx
+    select.ptx <<- norm_ptx
+    assign("select.ptx", select.ptx, .GlobalEnv)
   } else {
     cat("\nInvalid normalization option. Skipping normalization.\n")
   }
@@ -385,8 +385,8 @@ AdjustForConfounderAndBatchEffects <- function(reproduce = NULL) {
   # Ensure required objects exist in the global environment
   if (!exists("select.sinfo", envir = .GlobalEnv))
     stop("Global object 'select.sinfo' not found.")
-  if (!exists("select.npx", envir = .GlobalEnv))
-    stop("Global object 'select.npx' not found.")
+  if (!exists("select.ptx", envir = .GlobalEnv))
+    stop("Global object 'select.ptx' not found.")
   
   if (is.null(reproduce)) {
     reproduce <- data.frame(
@@ -447,15 +447,15 @@ AdjustForConfounderAndBatchEffects <- function(reproduce = NULL) {
     # This constructs a formula like: ~ conf1 + conf2 etc...
     formula_str <- paste("~", paste(confounder_columns, collapse = " + "))
     design <- model.matrix(as.formula(formula_str), data = select.sinfo)
-    fit <- limma::lmFit(t(select.npx), design)
+    fit <- limma::lmFit(t(select.ptx), design)
     
     # Calculate adjusted expression values by subtracting the confounder effects.
-    adjustedExpr <- select.npx - design %*% t(fit$coefficients)
+    adjustedExpr <- select.ptx - design %*% t(fit$coefficients)
     
-    # Update the global select.npx with the adjusted expression data.
-    unadjusted.npx <<- select.npx
-    select.npx <<- adjustedExpr
-    cat("Regression adjustment complete. Global variable 'select.npx' updated.\n")
+    # Update the global select.ptx with the adjusted expression data.
+    unadjusted.ptx <<- select.ptx
+    select.ptx <<- adjustedExpr
+    cat("Regression adjustment complete. Global variable 'select.ptx' updated.\n")
     
   } else if (method_choice == 2) {
     cat("Running adjustment using removeBatchEffect...\n")
@@ -463,13 +463,13 @@ AdjustForConfounderAndBatchEffects <- function(reproduce = NULL) {
     # For removeBatchEffect, convert the selected confounders into a numeric covariate matrix.
     confounder_data <- select.sinfo[, confounder_columns, drop = FALSE]
     covariate_design <- model.matrix(~ . , data = confounder_data)[, -1, drop = FALSE]
-    adjustedExpr <- limma::removeBatchEffect(t(select.npx), covariates = covariate_design)
+    adjustedExpr <- limma::removeBatchEffect(t(select.ptx), covariates = covariate_design)
     
-    # Update the global select.npx after transposing back.
-    unadjusted.npx <<- select.npx
-    select.npx <<- t(adjustedExpr)
+    # Update the global select.ptx after transposing back.
+    unadjusted.ptx <<- select.ptx
+    select.ptx <<- t(adjustedExpr)
     assign("reproduceAdjustment", reproduce, envir = .GlobalEnv)
-    cat("removeBatchEffect adjustment complete. Global variable 'select.npx' updated.\n")
+    cat("removeBatchEffect adjustment complete. Global variable 'select.ptx' updated.\n")
   }
   
   cat("Adjustment complete.\n")
