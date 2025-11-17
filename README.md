@@ -40,22 +40,22 @@ Step 2: Install and load all packages listed in PackLoader.R
 - The correct versions of the packages can be found in the file PackageVersions.txt
 
 Step 3: Prepare data
-- npx: protein abundance data (samples as rows, proteins as columns)
+- ptx: protein abundance data (samples as rows, proteins as columns)
   
 - sinfo: clinical information (samples as rows)
   -	Required columns:
-    o	region (for separating regional cohorts)
-    o	x_BC (cancer diagnosis)
-    o	sample_id
+    -	region (for separating regional cohorts)
+    -	x_BC (cancer diagnosis)
+    -	sample_id
    	
 - binfo: protein information (proteins as rows)
   -	Required columns:
-    o	region
-    o	panel
+    -	region
+    -	panel
 
 Step 4: Start Main Menu script
-- run_main_menu(sinfo, binfo, npx)
+- run_main_menu(sinfo, binfo, ptx)
 
 Notes:
-Columns detailing region, x_BC, and panel are used by the setup_variables function found in HelperFunctions.R, this function is applied when entering menus for quality control and preprocessing. If this information is not available in the used dataset it is recommended to create variables select.npx, select.sinfo, and select.binfo duplicating the npx, sinfo and binfo variables. The variables starting with “select.” will be the active variables in the analysis-suite and will remain so by choosing the option “Selected” in source selecting prompts. As the active variables will be changed and overwritten when applying QC, preprocessing and other functions found in the suite, initial creation of the npx, sinfo, and binfo as well as the active variables select.npx, select.sinfo, and select.binfo is recommended. Dimensionality reduction and scaling will create backup variables unreduced.npx and unscaled.npx to be used in downstream analyses, these variables will be overwritten if reapplying such methods.
+Columns detailing region, x_BC, and panel are used by the setup_variables function found in HelperFunctions.R, this function is applied when entering menus for quality control and preprocessing. If this information is not available in the used dataset it is recommended to create variables select.ptx, select.sinfo, and select.binfo duplicating the ptx, sinfo and binfo variables. The variables starting with “select.” will be the active variables in the analysis-suite and will remain so by choosing the option “Selected” in source selecting prompts. As the active variables will be changed and overwritten when applying QC, preprocessing and other functions found in the suite, initial creation of the ptx, sinfo, and binfo as well as the active variables select.ptx, select.sinfo, and select.binfo is recommended. Dimensionality reduction and scaling will create backup variables unreduced.ptx and unscaled.ptx to be used in downstream analyses, these variables will be overwritten if reapplying such methods.
 
