@@ -201,24 +201,24 @@ run_differential_abundance <- function(design_output,
   
   # Prompt for which data to use
   cat("Select expression data type to use for analysis:\n")
-  cat(" 1 - Scaled data (select.npx)\n")
-  cat(" 2 - Unscaled data (unscaled.npx)\n")
-  cat(" 3 - Unadjusted data (unadjusted.npx)\n")
-  cat(" 4 - Unreduced data (unreduced.npx)\n")
+  cat(" 1 - Scaled data (select.ptx)\n")
+  cat(" 2 - Unscaled data (unscaled.ptx)\n")
+  cat(" 3 - Unadjusted data (unadjusted.ptx)\n")
+  cat(" 4 - Unreduced data (unreduced.ptx)\n")
   data_choice <- as.integer(readline(prompt = "Enter your choice (1, 2, 3, or 4): "))
   
-  if (!is.na(data_choice) && data_choice == 2 && exists("unscaled.npx")) {
-    expr_matrix <- unscaled.npx
-    cat("Using unscaled data (unscaled.npx).\n\n")
-  } else if (!is.na(data_choice) && data_choice == 3 && exists("unadjusted.npx")) {
-    expr_matrix <- unadjusted.npx
-    cat("Using unadjusted data (unadjusted.npx).\n\n")
-  } else if (!is.na(data_choice) && data_choice == 4 && exists("unreduced.npx")) {
-    expr_matrix <- unreduced.npx
-    cat("Using unreduced data (unreduced.npx).\n\n")
+  if (!is.na(data_choice) && data_choice == 2 && exists("unscaled.ptx")) {
+    expr_matrix <- unscaled.ptx
+    cat("Using unscaled data (unscaled.ptx).\n\n")
+  } else if (!is.na(data_choice) && data_choice == 3 && exists("unadjusted.ptx")) {
+    expr_matrix <- unadjusted.ptx
+    cat("Using unadjusted data (unadjusted.ptx).\n\n")
+  } else if (!is.na(data_choice) && data_choice == 4 && exists("unreduced.ptx")) {
+    expr_matrix <- unreduced.ptx
+    cat("Using unreduced data (unreduced.ptx).\n\n")
   } else {
-    expr_matrix <- select.npx
-    cat("Using scaled data (select.npx).\n\n")
+    expr_matrix <- select.ptx
+    cat("Using scaled data (select.ptx).\n\n")
   }
   
   # Extract design and contrast created using the design function
@@ -292,8 +292,8 @@ DEAcontinuous <- function() {
   # Check required objects in the GlobalEnv
   if (!exists("select.sinfo", envir = .GlobalEnv))
     stop("Global object 'select.sinfo' not found.")
-  if (!exists("unreduced.npx", envir = .GlobalEnv))
-    stop("Global object 'unreduced.npx' not found.")
+  if (!exists("unreduced.ptx", envir = .GlobalEnv))
+    stop("Global object 'unreduced.ptx' not found.")
   
   # Main menu loop
   main_loop <- TRUE
@@ -392,7 +392,7 @@ DEAcontinuous <- function() {
     }
     
     # Prepare the protein data for limma
-    expression_data <- t(unreduced.npx)
+    expression_data <- t(unreduced.ptx)
     
     # Run limma
     fit <- limma::lmFit(expression_data, design_matrix)
