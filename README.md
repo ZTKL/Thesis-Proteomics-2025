@@ -40,15 +40,15 @@ Step 2: Install and load all packages listed in PackLoader.R
 - The correct versions of the packages can be found in the file PackageVersions.txt
 
 Step 3: Prepare data
-- ptx: protein abundance data (samples as rows, proteins as columns)
+- **ptx:** protein abundance data (samples as rows, proteins as columns)
   
-- sinfo: clinical information (samples as rows)
+- **sinfo:** clinical information (samples as rows)
   -	Required columns:
     -	region (for separating regional cohorts)
     -	x_BC (cancer diagnosis)
     -	sample_id
    	
-- binfo: protein information (proteins as rows)
+- **binfo:** protein information (proteins as rows)
   -	Required columns:
     -	region
     -	panel
