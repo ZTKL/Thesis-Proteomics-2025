@@ -1318,3 +1318,56 @@ run_pca_filtering_normal <- function(ptx, sinfo, reproduce = NULL) {
   assign("reproducePCAfilterNormal", reproduce, envir = .GlobalEnv)
   return(list(ptx = ptx, sinfo = sinfo))
 }
+
+###############################
+# Hierarchical Clustering
+###############################
+
+run_hierarchical_clustering <- function(ptx, sinfo) {
+  cat("\nRunning Hierarchical Clustering...\n")
+  
+  Traits4color <- c("ageCat", "bmiCat", "menopause_status", "mht_status",
+                                 "CancerTime", "x_BC", "alcoholCat",
+                                 "smoking_status")
+  temp.sinfo <- sinfo
+  temp.sinfo[Traits4color] <- lapply(temp.sinfo[Traits4color],
+                                     function(x) as.numeric(as.factor(x)))
+  # Perform hierarchical clustering on the numeric data in ptx
+  htr <- hclust(dist(ptx), method = "average")
+  
+  if (!requireNamespace("WGCNA", quietly = TRUE))
+    stop("WGCNA package is required. Please install it using install.packages('WGCNA').")
+  
+  
+  tr.colors <- WGCNA::numbers2colors(temp.sinfo[, Traits4color, drop = FALSE], signed = FALSE)
+  WGCNA::plotDendroAndColors(htr, tr.colors,
+                             groupLabels = names(temp.sinfo[, Traits4color, drop = FALSE]),
+                             main = "Sample Dendrogram and Trait Heatmap")
+  
+  # Interactive loop for sample removal; removal will update the global variables ptx and sinfo
+  repeat {
+    cat("\nWhich sample to remove? Enter sample row name or 0 to exit removal:\n")
+    sample_to_remove <- trimws(readline())
+    
+    if (sample_to_remove == "0") {
+      cat("\nReturning to QC menu.\n")
+      break
+    } else {
+      if (sample_to_remove %in% rownames(ptx)) {
+        # Remove the sample(s) from local ptx and sinfo
+        ptx <- ptx[!rownames(ptx) %in% sample_to_remove, , drop = FALSE]
+        sinfo <- sinfo[rownames(sinfo) %in% rownames(ptx), , drop = FALSE]
+        
+        # Explicitly update the global variables using assign()
+        assign("select.ptx", ptx, envir = .GlobalEnv)
+        assign("select.sinfo", sinfo, envir = .GlobalEnv)
+        
+        cat("\nSample", sample_to_remove, "removed successfully.\n")
+      } else {
+        cat("\nInvalid sample selection. Please try again.\n")
+      }
+    }
+  }
+  
+  return(list(ptx = ptx, sinfo = sinfo))
+}
